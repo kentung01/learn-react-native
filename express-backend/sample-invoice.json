@@ -1,0 +1,32 @@
+{
+    "plateNumber": "B 9999 NEW",
+    "vehicleModel": "Toyota Avanza",
+    "vehicleBrand": "Toyota",
+    "customerName": "Pak Asep",
+    "customerPhone": "0812999999",
+    "customerAddress": "Jl. Kenangan No. 1, Jakarta",
+    "items": [
+        {
+            "type": "PRODUCT",
+            "refId": 1,
+            "name": "Oli Shell Helix HX7",
+            "qty": 2,
+            "price": 55000
+        },
+        {
+            "type": "SERVICE",
+            "refId": 1,
+            "name": "Jasa Ganti Oli",
+            "qty": 1,
+            "price": 25000
+        },
+        {
+            "type": "MANUAL",
+            "refId": null,
+            "name": "Jasa Las Knalpot Custom",
+            "qty": 1,
+            "price": 100000
+        }
+    ],
+    "discount": 0
+}

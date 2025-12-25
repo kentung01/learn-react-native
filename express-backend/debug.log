@@ -1,0 +1,24 @@
+DEBUG: Starting script
+DEBUG: DATABASE_URL is DEFINED
+DEBUG: Initializing PrismaClient (no args)...
+DEBUG: ERROR CAUGHT: PrismaClientInitializationError: `PrismaClient` needs to be constructed with a non-empty, valid `PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t (C:\Users\solui\Desktop\syahid\belajar\react native\my-app\express-backend\node_modules\@prisma\client\runtime\client.js:70:960)
+    at file:///C:/Users/solui/Desktop/syahid/belajar/react%20native/my-app/express-backend/debug-prisma.js:18:20
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)

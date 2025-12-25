@@ -1,0 +1,174 @@
+{
+    "info": {
+        "_postman_id": "car-workshop-api",
+        "name": "Car Workshop API",
+        "description": "API Collection for Car Workshop Application with Hybrid Input",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Vehicles",
+            "item": [
+                {
+                    "name": "Search Vehicles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/vehicles/search?plate=B",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "plate",
+                                    "value": "B",
+                                    "description": "Search by plate number (contains)"
+                                }
+                            ]
+                        },
+                        "description": "Search for vehicles by plate number. Returns vehicle and owner details."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Items (Products & Services)",
+            "item": [
+                {
+                    "name": "Search Items",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/items/search?q=oli",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "items",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "oli",
+                                    "description": "Search by name or code"
+                                }
+                            ]
+                        },
+                        "description": "Search for products and services. Returns unified list with type 'PRODUCT' or 'SERVICE'."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Invoices",
+            "item": [
+                {
+                    "name": "Create Invoice (Hybrid)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"plateNumber\": \"DK 8888 NEW\",\n  \"vehicleModel\": \"Toyota Fortuner\",\n  \"customerName\": \"Bapak Baru\",\n  \"customerPhone\": \"081234567890\",\n  \"items\": [\n    {\n      \"type\": \"PRODUCT\",\n      \"refId\": 1,\n      \"qty\": 2\n    },\n    {\n      \"type\": \"SERVICE\",\n      \"refId\": 1,\n      \"qty\": 1\n    },\n    {\n      \"type\": \"MANUAL\",\n      \"name\": \"Jasa Pasang Variasi\",\n      \"qty\": 1,\n      \"price\": 150000\n    }\n  ],\n  \"discount\": 0\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices"
+                            ]
+                        },
+                        "description": "Create a new invoice. Handles hybrid input (new/existing vehicle/customer) and mixed item types (Product, Service, Manual)."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Invoices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices"
+                            ]
+                        },
+                        "description": "Get paginated list of invoices."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Invoice Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "1"
+                            ]
+                        },
+                        "description": "Get full details of a specific invoice."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3000",
+            "type": "string"
+        }
+    ]
+}
