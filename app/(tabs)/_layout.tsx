@@ -33,7 +33,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="addInvoice"
         options={{
           title: 'Buat Invoice',
           tabBarIcon: ()=>{ return <>
