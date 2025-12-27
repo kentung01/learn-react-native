@@ -42,9 +42,9 @@ export default function TabLayout() {
         }}
       />
        <Tabs.Screen
-        name="send" 
+        name="daftarHarga" 
         options={{
-          title: 'send',
+          title: 'Daftar Harga',
             tabBarIcon: ()=>{ return <>
                 <Image source={require('@/assets/images/icons/price-list-icon.png')} style={{height: 40, width: 40}} />
             </> }
