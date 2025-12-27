@@ -56,7 +56,7 @@ export default function HomeScreen() {
         <ThemedText type="subtitle" style={[styleText.collorRed]}>Invoice Terkini</ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <ThemedText >
+        <View >
           {listItems.map((item, index) => (
             <Pressable key={index} style={(pressed) => [styles.box, pressed && { opacity: 0.5 }]} onPress={() => alert(`${item} pressed`)}>
               <View key={index} style={styles.box}>
@@ -67,7 +67,7 @@ export default function HomeScreen() {
               </View>
             </Pressable>
           ))}
-        </ThemedText>
+        </View>
         <Pressable style={(pressed) => [styles.box, pressed && { opacity: 0.8 }]} onPress={() => alert(`Tambah Infoice pressed`)}>
            <View style={[{height: 50},{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]}> <Image source={require('@/assets/images/icons/arrow-button-icon.png')} style={{height: 50, width: 50 }} /> 
              <ThemedText>Lihat lainya</ThemedText>
