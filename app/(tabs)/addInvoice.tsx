@@ -1,5 +1,7 @@
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { redCollor } from '../color';
 
 export default function TabTwoScreen() {
@@ -9,6 +11,56 @@ export default function TabTwoScreen() {
   const [namaPelanggan, setNamaPelanggan] = useState('');
   const [nomorPelanggan, setNomorPelanggan] = useState('');
   const [platNomor, setPlatNomor] = useState('');
+  const [imageUri, setImageUri] = useState<string[] | null>(null);
+
+  //function pickImage() {
+    const takePicture = async () => {
+      // 1. Minta Izin Kamera
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          
+          if (status !== 'granted') {
+            Alert.alert('Maaf', 'Aplikasi butuh izin kamera untuk mengambil foto.');
+            return;
+          }
+          
+
+          // 2. Buka Kamera System
+          const result = await ImagePicker.launchCameraAsync({
+            // PERBAIKAN 1: Gunakan Enum, jangan array string manual
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+            allowsEditing: false,
+            quality: 1,
+          });
+
+        // 3. Cek apakah user jadi ambil foto atau cancel
+        if (!result.canceled) {
+          // Ambil URI dari foto pertama (assets[0])
+          const photos = imageUri ? [...imageUri] : [];
+          photos.push(result.assets[0].uri);
+          setImageUri(photos);
+          
+        }
+      }
+
+    // --- FUNGSI 2: Simpan ke Galeri HP ---
+  const saveToGallery = async () => {
+    if (!imageUri) return;
+
+    // 1. Minta Izin Tulis ke Galeri
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+
+    if (status === 'granted') {
+      try {
+        // 2. Simpan Asset
+        await MediaLibrary.createAssetAsync(imageUri[0]);
+        Alert.alert('Sukses', 'Foto berhasil disimpan ke Galeri!');
+      } catch (error) {
+        Alert.alert('Gagal', 'Tidak bisa menyimpan foto.');
+      }
+    } else {
+      Alert.alert('Izin Ditolak', 'Berikan izin akses galeri di pengaturan.');
+    }
+  };
 
   // State Dinamis untuk List Item
   const [items, setItems] = useState([
@@ -53,6 +105,28 @@ export default function TabTwoScreen() {
             <Text style={styles.headerText}>No. Invoice: {nomorInvoice}</Text>
             <Text style={styles.dateText}>{tanggal}</Text>
           </View>
+
+            {/* Area Preview Foto */}
+            <View style={styles.previewBox}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri[0] }} style={styles.image} />
+              ) : (
+                <Text style={styles.placeholderText}>Belum ada foto diambil</Text>
+              )}
+            </View>
+
+            {/* Tombol Ambil Foto */}
+            <TouchableOpacity onPress={takePicture} style={styles.btnCapture}>
+              <Text style={styles.btnText}>📷 Ambil Foto</Text>
+            </TouchableOpacity>
+
+            {/* Tombol Simpan (Muncul hanya jika sudah ada foto) */}
+            {imageUri && (
+              <TouchableOpacity onPress={saveToGallery} style={styles.btnSave}>
+                <Text style={styles.btnText}>💾 Simpan ke Galeri</Text>
+              </TouchableOpacity>
+            )}
+      
 
           {/* Input Data Pelanggan */}
           <View style={styles.section}>
@@ -240,4 +314,49 @@ const styles = StyleSheet.create({
   },
   addBtnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
   divider: { height: 1, backgroundColor: '#eee', marginVertical: 15 },
-});
+
+
+  previewBox: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginBottom: 20,
+    overflow: 'hidden', // Agar gambar tidak keluar border
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  placeholderText: {
+    color: '#777',
+  },
+  btnCapture: {
+    backgroundColor: '#2196F3', // Biru
+    padding: 15,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  btnSave: {
+    backgroundColor: '#4CAF50', // Hijau
+    padding: 15,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  btnText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+}
+
+
+);
