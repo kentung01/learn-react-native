@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
-import * as MediaLibrary from 'expo-media-library';
 import React, { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+// Pastikan path import ini benar sesuai struktur folder Anda
 import { redCollor } from '../color';
 
 export default function TabTwoScreen() {
@@ -11,80 +11,88 @@ export default function TabTwoScreen() {
   const [namaPelanggan, setNamaPelanggan] = useState('');
   const [nomorPelanggan, setNomorPelanggan] = useState('');
   const [platNomor, setPlatNomor] = useState('');
-  const [imageUri, setImageUri] = useState<string[] | null>(null);
 
-  //function pickImage() {
-    const takePicture = async () => {
-      // 1. Minta Izin Kamera
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-          
-          if (status !== 'granted') {
-            Alert.alert('Maaf', 'Aplikasi butuh izin kamera untuk mengambil foto.');
-            return;
-          }
-          
+  // Hapus state global imageUri, karena sekarang foto nempel di masing-masing item
+  // const [imageUri, setImageUri] = useState<string[] | null>(null);
 
-          // 2. Buka Kamera System
-          const result = await ImagePicker.launchCameraAsync({
-            // PERBAIKAN 1: Gunakan Enum, jangan array string manual
-            mediaTypes: ImagePicker.MediaTypeOptions.Images, 
-            allowsEditing: false,
-            quality: 1,
-          });
+  // State Dinamis untuk List Item (Sekarang ada properti imageUri)
+  const [items, setItems] = useState([
+    { id: Date.now(), qty: '', deskripsi: '', harga: '', jumlah: 0, imageUri: "" }
+  ]);
 
-        // 3. Cek apakah user jadi ambil foto atau cancel
-        if (!result.canceled) {
-          // Ambil URI dari foto pertama (assets[0])
-          const photos = imageUri ? [...imageUri] : [];
-          photos.push(result.assets[0].uri);
-          setImageUri(photos);
-          
-        }
+  // --- FUNGSI 1: Update Foto Item (Helper) ---
+  const updateItemImage = (id:any, uri:string) => {
+    const newItems = items.map(item => {
+      if (item.id === id) {
+        return { ...item, imageUri: uri };
       }
+      return item;
+    });
+    setItems(newItems);
+  };
 
-    // --- FUNGSI 2: Simpan ke Galeri HP ---
-  const saveToGallery = async () => {
-    if (!imageUri) return;
+  // --- FUNGSI 2: Buka Kamera ---
+  const takePicture = async (itemId:any) => {
+    // Minta Izin Kamera
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Maaf', 'Aplikasi butuh izin kamera.');
+      return;
+    }
 
-    // 1. Minta Izin Tulis ke Galeri
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-
-    if (status === 'granted') {
-      try {
-        // 2. Simpan Asset
-        await MediaLibrary.createAssetAsync(imageUri[0]);
-        Alert.alert('Sukses', 'Foto berhasil disimpan ke Galeri!');
-      } catch (error) {
-        Alert.alert('Gagal', 'Tidak bisa menyimpan foto.');
-      }
-    } else {
-      Alert.alert('Izin Ditolak', 'Berikan izin akses galeri di pengaturan.');
+    // Buka Kamera
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // <--- Perbaikan Syntax
+      allowsEditing: true, // Ubah jadi TRUE agar user bisa crop (opsional, tapi lebih stabil)
+      aspect: [4, 3],      // Rasio foto standar
+      quality: 0.3,        // <--- TURUNKAN JADI 0.3 - 0.5 AGAR TIDAK CRASH MEMORI
+    });
+    if (!result.canceled) {
+      updateItemImage(itemId, result.assets[0].uri);
     }
   };
 
-  // State Dinamis untuk List Item
-  const [items, setItems] = useState([
-    { id: Date.now(), qty: '', deskripsi: '', harga: '', jumlah: 0 }
-  ]);
+  // --- FUNGSI 3: Pilih dari Galeri (Fitur Baru) ---
+  const pickImage = async (itemId:any) => {
+    // Minta Izin Galeri
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Maaf', 'Aplikasi butuh izin akses galeri.');
+      return;
+    }
 
-  // Fungsi Tambah Item
+    // Buka Galeri
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      updateItemImage(itemId, result.assets[0].uri);
+    }
+  };
+
+  // Fungsi Tambah Item Baru
   const tambahItem = () => {
-    setItems([...items, { id: Date.now(), qty: '', deskripsi: '', harga: '', jumlah: 0 }]);
+    setItems([...items, { id: Date.now(), qty: '', deskripsi: '', harga: '', jumlah: 0, imageUri: "" }]);
   };
 
   // Fungsi Hapus Item
-  const hapusItem = (id: number) => {
+  const hapusItem = (id:any) => {
     if (items.length > 1) {
       setItems(items.filter(item => item.id !== id));
+    } else {
+        // Jika tinggal 1, reset saja isinya jangan dihapus row-nya
+        setItems([{ id: Date.now(), qty: '', deskripsi: '', harga: '', jumlah: 0, imageUri: "" }]);
     }
   };
 
   // Fungsi Update Item & Hitung Otomatis
-  const updateItem = (id: number, field: string, value: string) => {
+  const updateItem = (id:any, field:any, value:any) => {
     const newItems = items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
-        // Hitung jumlah otomatis jika qty atau harga berubah
         if (field === 'qty' || field === 'harga') {
           updatedItem.jumlah = (parseInt(updatedItem.qty) || 0) * (parseInt(updatedItem.harga) || 0);
         }
@@ -105,28 +113,6 @@ export default function TabTwoScreen() {
             <Text style={styles.headerText}>No. Invoice: {nomorInvoice}</Text>
             <Text style={styles.dateText}>{tanggal}</Text>
           </View>
-
-            {/* Area Preview Foto */}
-            <View style={styles.previewBox}>
-              {imageUri ? (
-                <Image source={{ uri: imageUri[0] }} style={styles.image} />
-              ) : (
-                <Text style={styles.placeholderText}>Belum ada foto diambil</Text>
-              )}
-            </View>
-
-            {/* Tombol Ambil Foto */}
-            <TouchableOpacity onPress={takePicture} style={styles.btnCapture}>
-              <Text style={styles.btnText}>📷 Ambil Foto</Text>
-            </TouchableOpacity>
-
-            {/* Tombol Simpan (Muncul hanya jika sudah ada foto) */}
-            {imageUri && (
-              <TouchableOpacity onPress={saveToGallery} style={styles.btnSave}>
-                <Text style={styles.btnText}>💾 Simpan ke Galeri</Text>
-              </TouchableOpacity>
-            )}
-      
 
           {/* Input Data Pelanggan */}
           <View style={styles.section}>
@@ -161,6 +147,7 @@ export default function TabTwoScreen() {
 
           {/* List Item Dinamis */}
           <Text style={styles.sectionTitle}>Perincian Pekerjaan</Text>
+          
           {items.map((item, index) => (
             <View key={item.id} style={styles.itemBox}>
               <View style={styles.rowBetween}>
@@ -172,6 +159,7 @@ export default function TabTwoScreen() {
                 )}
               </View>
 
+              {/* Input Deskripsi */}
               <TextInput
                 style={styles.inputFull}
                 placeholder="Perincian Barang / Jenis Pekerjaan"
@@ -179,6 +167,7 @@ export default function TabTwoScreen() {
                 onChangeText={(val) => updateItem(item.id, 'deskripsi', val)}
               />
 
+              {/* Input Angka */}
               <View style={styles.row}>
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <Text style={styles.miniLabel}>Banyaknya</Text>
@@ -202,6 +191,39 @@ export default function TabTwoScreen() {
                 </View>
               </View>
 
+              {/* AREA FOTO PER ITEM (Updated) */}
+              <View style={styles.photoSection}>
+                {item.imageUri ? (
+                    // Tampilan Jika Sudah Ada Foto
+                    <View style={styles.imageWrapper}>
+                        <Image source={{ uri: item.imageUri }} style={styles.itemImage} />
+                        <TouchableOpacity 
+                            style={styles.removePhotoBtn} 
+                            onPress={() => updateItemImage(item.id, "")}
+                        >
+                            <Text style={{color: 'white', fontSize: 10}}>X</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    // Tampilan Jika Belum Ada Foto (Tombol Pilihan)
+                    <View style={styles.photoButtonRow}>
+                        <TouchableOpacity 
+                            onPress={() => takePicture(item.id)} 
+                            style={[styles.smallBtn, {backgroundColor: '#2196F3'}]}
+                        >
+                            <Text style={styles.smallBtnText}>📷 Foto</Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            onPress={() => pickImage(item.id)} 
+                            style={[styles.smallBtn, {backgroundColor: '#FF9800'}]}
+                        >
+                            <Text style={styles.smallBtnText}>🖼️ Galeri</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+              </View>
+
               <View style={styles.totalRow}>
                 <Text>Subtotal: </Text>
                 <Text style={styles.totalText}>Rp {item.jumlah.toLocaleString('id-ID')}</Text>
@@ -209,22 +231,19 @@ export default function TabTwoScreen() {
             </View>
           ))}
 
-          {/* Tombol Tambah */}
+          {/* Tombol Aksi Bawah */}
           <Pressable style={styles.addBtn} onPress={tambahItem}>
             <Text style={styles.addBtnText}>+ Tambah Pekerjaan</Text>
           </Pressable>
+
           <View style={[{flexDirection: 'row', justifyContent: 'center', gap: 10}, {marginTop: 20}]}>
-             {/* Tombol Simpan */}
-            <Pressable style={styles.addBtn} onPress={tambahItem}>
+            <Pressable style={styles.addBtn}>
               <Text style={styles.addBtnText}> Simpan </Text>
             </Pressable>
-             <Pressable style={styles.addBtn} onPress={tambahItem}>
+             <Pressable style={styles.addBtn}>
               <Text style={styles.addBtnText}> Cetak </Text>
             </Pressable>
-
           </View>
-         
-
 
           <View style={{ height: 50 }} />
         </View>
@@ -306,7 +325,7 @@ const styles = StyleSheet.create({
   },
   totalText: { fontWeight: 'bold', color: '#2e7d32' },
   addBtn: {
-    backgroundColor: redCollor(),
+    backgroundColor: redCollor ? redCollor() : 'red', // Fallback jika function error
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -315,48 +334,49 @@ const styles = StyleSheet.create({
   addBtnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
   divider: { height: 1, backgroundColor: '#eee', marginVertical: 15 },
 
-
-  previewBox: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#ddd',
+  // --- Styles Baru untuk Foto per Item ---
+  photoSection: {
+    marginTop: 5,
+    marginBottom: 10,
+    alignItems: 'flex-start'
+  },
+  photoButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  smallBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  smallBtnText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+  },
+  itemImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  removePhotoBtn: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
-    marginBottom: 20,
-    overflow: 'hidden', // Agar gambar tidak keluar border
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  placeholderText: {
-    color: '#777',
-  },
-  btnCapture: {
-    backgroundColor: '#2196F3', // Biru
-    padding: 15,
-    borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  btnSave: {
-    backgroundColor: '#4CAF50', // Hijau
-    padding: 15,
-    borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
-  },
-  btnText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-}
-
-
-);
+  }
+});
